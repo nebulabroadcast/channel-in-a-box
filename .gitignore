@@ -1,0 +1,13 @@
+nebula-server/
+nebula-worker/
+
+storage/.nx/proxy
+storage/.nx/creating
+storage/import.dir/backup
+
+*.mxf
+*.log
+
+__pycache__
+.ruff_cache
+.env

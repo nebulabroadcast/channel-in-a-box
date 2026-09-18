@@ -1,0 +1,15 @@
+# Development override: mounts local nebula source code into the containers.
+# Enabled by COMPOSE_FILE in .env (see the commented lines there).
+
+services:
+  setup:
+    volumes:
+      - "${NEBULA_SERVER_PATH:?set NEBULA_SERVER_PATH in .env}:/backend"
+
+  server:
+    volumes:
+      - "${NEBULA_SERVER_PATH:?set NEBULA_SERVER_PATH in .env}:/backend"
+
+  worker:
+    volumes:
+      - "${NEBULA_WORKER_PATH:?set NEBULA_WORKER_PATH in .env}:/opt/nebula"

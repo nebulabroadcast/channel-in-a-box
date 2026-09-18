@@ -1,0 +1,22 @@
+# Development HTTPS loadbalancer. NEBULA_HOST is the IP or hostname
+# clients use to reach this machine (set in .env).
+{
+	# Browsers send no SNI when connecting by IP, and inside the container
+	# Caddy only sees its own docker IP, so tell it which cert to serve.
+	default_sni {$NEBULA_HOST}
+
+  log {
+        output stderr
+        level ERROR
+        sampling {
+            interval 5s
+            first 2
+            thereafter 1000
+        }
+    }
+}
+
+https://{$NEBULA_HOST}:4455 {
+	tls internal
+	reverse_proxy server:80
+}

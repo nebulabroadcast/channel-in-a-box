@@ -1,0 +1,131 @@
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nebula"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      - "POSTGRES_USER=nebula"
+      - "POSTGRES_PASSWORD=nebula"
+      - "POSTGRES_DB=nebula"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "db:/var/lib/postgresql"
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  loadbalancer:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "4455:4455"
+    environment:
+      - "NEBULA_HOST=${NEBULA_HOST:?set NEBULA_HOST in .env}"
+    volumes:
+      - "./Caddyfile:/etc/caddy/Caddyfile:ro"
+      # keeps the internal CA, so you only trust it once
+      - "caddy_data:/data"
+
+  setup:
+    image: nebulabroadcast/nebula-server:dev
+    restart: no
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: ["./manage", "setup"]
+    volumes:
+      - "./settings:/settings"
+      - "./storage:/mnt/nebula_01"
+
+  server:
+    image: nebulabroadcast/nebula-server:dev
+    restart: unless-stopped
+    expose:
+      - 80
+    deploy:
+      mode: replicated
+      replicas: 3
+      endpoint_mode: vip
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      setup:
+        condition: service_completed_successfully
+    entrypoint: ["./manage", "serve"]
+
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./plugins:/plugins"
+      - "./settings:/settings"
+      - "./storage:/mnt/nebula_01"
+    environment:
+      - "NEBULA_LOG_LEVEL=trace"
+
+
+  worker:
+    image: nebulabroadcast/nebula-worker:dev
+    hostname: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      default:
+        ipv4_address: 172.28.0.10
+    volumes:
+      - "./storage:/mnt/nebula_01"
+
+
+  # mediamtx:
+  #   image: bluenviron/mediamtx:latest
+  #   volumes:
+  #     - ./mediamtx.yml:/mediamtx.yml:ro
+  #   restart: unless-stopped
+
+  casparcg:
+    image: nebulabroadcast/casparcg:2.5.0
+    expose: 
+      - 5250
+    ports:
+      - 5250:5250
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./casparcg.config:/opt/casparcg/casparcg.config
+      - ./storage:/storage
+    # depends_on:
+    #   - mediamtx
+    restart: unless-stopped
+
+
+#
+# Docker stack setup
+#
+
+volumes:
+  db: {}
+  caddy_data: {}
+
+# We need a static IP for the worker. predefined hosts for OSC messaging
+# in CasparCG cannot use hostnames
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
