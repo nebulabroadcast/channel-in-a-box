@@ -1,0 +1,9 @@
+services:
+  casparcg:
+    volumes:
+      - /usr/lib/libDeckLinkAPI.so:/usr/lib/libDeckLinkAPI.so
+      - /usr/lib/libDeckLinkPreviewAPI.so:/usr/lib/libDeckLinkPreviewAPI.so
+
+    devices:
+      - /dev/blackmagic
+

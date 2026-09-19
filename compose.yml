@@ -99,8 +99,6 @@ services:
 
   casparcg:
     image: nebulabroadcast/casparcg:2.5.0
-    expose: 
-      - 5250
     ports:
       - 5250:5250
     devices:

@@ -1,0 +1,4 @@
+services:
+  casparcg:
+    devices:
+      - nvidia.com/gpu=all
