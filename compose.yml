@@ -14,6 +14,8 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "db:/var/lib/postgresql"
+    networks:
+      - nebula-box
 
   redis:
     image: redis:alpine
@@ -23,6 +25,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - nebula-box
 
   loadbalancer:
     image: caddy:latest
@@ -35,6 +39,8 @@ services:
       - "./Caddyfile:/etc/caddy/Caddyfile:ro"
       # keeps the internal CA, so you only trust it once
       - "caddy_data:/data"
+    networks:
+      - nebula-box
 
   setup:
     image: nebulabroadcast/nebula-server:dev
@@ -48,6 +54,8 @@ services:
     volumes:
       - "./settings:/settings"
       - "./storage:/mnt/nebula_01"
+    networks:
+      - nebula-box
 
   server:
     image: nebulabroadcast/nebula-server:dev
@@ -74,6 +82,8 @@ services:
       - "./storage:/mnt/nebula_01"
     environment:
       - "NEBULA_LOG_LEVEL=trace"
+    networks:
+      - nebula-box
 
 
   worker:
@@ -85,8 +95,8 @@ services:
       redis:
         condition: service_healthy
     networks:
-      default:
-        ipv4_address: 172.28.0.10
+      nebula-box:
+        ipv4_address: 172.44.0.10
     volumes:
       - "./storage:/mnt/nebula_01"
 
@@ -109,6 +119,8 @@ services:
     # depends_on:
     #   - mediamtx
     restart: unless-stopped
+    networks:
+      - nebula-box
 
 
 #
@@ -123,7 +135,7 @@ volumes:
 # in CasparCG cannot use hostnames
 
 networks:
-  default:
+  nebula-box:
     ipam:
       config:
-        - subnet: 172.28.0.0/16
+        - subnet: 172.44.0.0/16
