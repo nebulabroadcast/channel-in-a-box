@@ -1,9 +1,9 @@
 # Minimal override - everything else falls back to mediamtx's built-in
 # defaults (HLS on :8888, WebRTC on :8889/:8189, RTSP on :8554, etc).
 #
-# CasparCG pushes MPEG-TS over UDP; mediamtx just needs a path that listens
-# for it. 0.0.0.0 = accept from any sender (both containers share the host's
-# network namespace here, so caspar reaches this as 127.0.0.1:1234).
+# CasparCG pushes MPEG-TS over UDP to mediamtx:1234 (see the <ffmpeg>
+# consumer in casparcg.config); mediamtx just needs a path that listens
+# for it. The stream is then available at http://localhost:8888/live
 paths:
   live:
     source: udp+mpegts://0.0.0.0:1234

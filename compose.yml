@@ -32,9 +32,10 @@ services:
     image: caddy:latest
     restart: unless-stopped
     ports:
-      - "4455:4455"
+      - "4455:4455" # plain HTTP (development)
+      - "4443:4443" # HTTPS
     environment:
-      - "NEBULA_HOST=${NEBULA_HOST:?set NEBULA_HOST in .env}"
+      - "NEBULA_HOST=${NEBULA_HOST:-localhost}"
     volumes:
       - "./Caddyfile:/etc/caddy/Caddyfile:ro"
       # keeps the internal CA, so you only trust it once
@@ -89,11 +90,14 @@ services:
   worker:
     image: nebulabroadcast/nebula-worker:dev
     hostname: worker
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      setup:
+        condition: service_completed_successfully
     networks:
       nebula-box:
         ipv4_address: 172.44.0.10
@@ -101,11 +105,17 @@ services:
       - "./storage:/mnt/nebula_01"
 
 
-  # mediamtx:
-  #   image: bluenviron/mediamtx:latest
-  #   volumes:
-  #     - ./mediamtx.yml:/mediamtx.yml:ro
-  #   restart: unless-stopped
+  # Preview stream: CasparCG pushes MPEG-TS over UDP, mediamtx serves it
+  # as HLS on http://localhost:8888/live
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    volumes:
+      - "./mediamtx.yml:/mediamtx.yml:ro"
+    networks:
+      - nebula-box
 
   casparcg:
     image: nebulabroadcast/casparcg:2.5.0
@@ -116,8 +126,8 @@ services:
     volumes:
       - ./casparcg.config:/opt/casparcg/casparcg.config
       - ./storage:/storage
-    # depends_on:
-    #   - mediamtx
+    depends_on:
+      - mediamtx
     restart: unless-stopped
     networks:
       - nebula-box

@@ -1,22 +1,33 @@
-# Development HTTPS loadbalancer. NEBULA_HOST is the IP or hostname
-# clients use to reach this machine (set in .env).
+# Loadbalancer. NEBULA_HOST is the IP or hostname clients use to reach
+# this machine (set in .env, defaults to localhost).
+#
+#   :4443  HTTPS with a self-signed certificate
+#   :4455  plain HTTP, no redirect (for development, e.g. vite dev server)
 {
+	# Serve 4455 as plain HTTP instead of redirecting it to HTTPS
+	auto_https disable_redirects
+
 	# Browsers send no SNI when connecting by IP, and inside the container
 	# Caddy only sees its own docker IP, so tell it which cert to serve.
 	default_sni {$NEBULA_HOST}
 
-  log {
-        output stderr
-        level ERROR
-        sampling {
-            interval 5s
-            first 2
-            thereafter 1000
-        }
-    }
+	log {
+		output stderr
+		level ERROR
+		sampling {
+			interval 5s
+			first 2
+			thereafter 1000
+		}
+	}
 }
 
-https://{$NEBULA_HOST}:4455 {
+https://{$NEBULA_HOST}:4443 {
 	tls internal
+	reverse_proxy server:80
+}
+
+# Any host name, so it works via localhost, LAN IP or a dev proxy
+http://:4455 {
 	reverse_proxy server:80
 }
