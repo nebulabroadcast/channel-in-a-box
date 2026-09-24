@@ -113,6 +113,9 @@ docker compose up -d          # start (or apply changes)
 docker compose down           # stop
 docker compose logs -f worker # follow ingest / transcoding / playout logs
 docker compose ps             # service status
+
+make setup                    # apply changes in ./settings (restarts server and worker)
+make update                   # pull the latest Nebula / CasparCG images and recreate the stack
 ```
 
 Your data survives restarts:
