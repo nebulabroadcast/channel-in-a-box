@@ -100,6 +100,9 @@ is playing. This is a preview stream (720p H.264 over HLS) that CasparCG
 generates and [mediamtx](https://github.com/bluenviron/mediamtx) serves. It
 lags a few seconds behind the actual output.
 
+For lower latency, open **`rtsp://localhost:8554/live`** in a player such as
+VLC or ffplay.
+
 The stream only exists while CasparCG is running. If nothing is on air, you see
 black.
 
@@ -215,7 +218,7 @@ are running (`docker compose ps`), then look at
 | `server`       | Nebula backend + web UI (3 replicas)                                      |
 | `worker`       | Nebula services: broker, meta, **play**, import, conv (see `settings/services.py`) |
 | `casparcg`     | Playout engine, controlled by the `play` service over AMCP (`:5250`)      |
-| `mediamtx`     | Serves CasparCG's preview stream as HLS on `:8888`                        |
+| `mediamtx`     | Serves CasparCG's preview stream as HLS on `:8888` and RTSP on `:8554`    |
 | `loadbalancer` | Caddy, HTTPS on `:4443` and plain HTTP on `:4455`, proxies to `server`    |
 
 `worker` has a static IP (`172.44.0.10`) because CasparCG sends OSC status
@@ -309,7 +312,7 @@ compose.nvidia.yml        NVIDIA GPU for CasparCG
 compose.blackmagic.yml    DeckLink for CasparCG
 casparcg.config           CasparCG configuration (video mode, media path, preview stream)
 Caddyfile                 HTTPS load balancer
-mediamtx.yml              preview stream server (HLS on :8888)
+mediamtx.yml              preview stream server (HLS on :8888, RTSP on :8554)
 settings/                 Nebula settings, loaded by the `setup` job
   channels.py             playout channel (playout_storage, playout_dir, caspar_*)
   storages.py             storage definitions

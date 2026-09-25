@@ -105,13 +105,14 @@ services:
       - "./storage:/mnt/nebula_01"
 
 
-  # Preview stream: CasparCG pushes MPEG-TS over UDP, mediamtx serves it
-  # as HLS on http://localhost:8888/live
+  # Preview stream: CasparCG publishes over RTSP, mediamtx serves it
+  # as HLS on http://localhost:8888/live and RTSP on rtsp://localhost:8554/live
   mediamtx:
     image: bluenviron/mediamtx:latest
     restart: unless-stopped
     ports:
-      - "8888:8888"
+      - "8888:8888" # HLS
+      - "8554:8554" # RTSP
     volumes:
       - "./mediamtx.yml:/mediamtx.yml:ro"
     networks:
