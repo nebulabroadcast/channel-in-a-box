@@ -157,6 +157,7 @@ Optional compose overrides, enabled with `COMPOSE_FILE` in `.env`:
 ```sh
 COMPOSE_FILE=compose.yml:compose.nvidia.yml           # NVIDIA GPU for CasparCG (via CDI)
 COMPOSE_FILE=compose.yml:compose.blackmagic.yml       # Blackmagic DeckLink output
+COMPOSE_FILE=compose.yml:compose.prometheus.yml       # Prometheus + node-exporter
 ```
 
 - `compose.nvidia.yml` passes `nvidia.com/gpu=all` to CasparCG.
@@ -164,6 +165,13 @@ COMPOSE_FILE=compose.yml:compose.blackmagic.yml       # Blackmagic DeckLink outp
   (`/usr/lib/libDeckLinkAPI.so`, `libDeckLinkPreviewAPI.so`) and
   `/dev/blackmagic`. Also uncomment the `<decklink>` consumer in
   `casparcg.config`.
+- `compose.prometheus.yml` adds Prometheus (http://localhost:9090) and
+  node-exporter (internal only, no NIC traffic counters since it does not use
+  the host network). Prometheus scrapes node-exporter and
+  Balthasar's `/metrics` (`[http] port` in `balthasar.toml`); targets are in
+  `prometheus.yml`.
+
+Overrides combine: `COMPOSE_FILE=compose.yml:compose.nvidia.yml:compose.prometheus.yml`.
 
 Without an override, CasparCG gets `/dev/dri` (software rendering, Intel or
 AMD GPU).
@@ -310,6 +318,8 @@ compose.yml               core stack
 compose.dev.yml           dev override: mount local nebula-server / nebula-worker
 compose.nvidia.yml        NVIDIA GPU for CasparCG
 compose.blackmagic.yml    DeckLink for CasparCG
+compose.prometheus.yml    Prometheus + node-exporter (optional)
+prometheus.yml            Prometheus scrape targets
 casparcg.config           CasparCG configuration (video mode, media path, preview stream)
 Caddyfile                 HTTPS load balancer
 mediamtx.yml              preview stream server (HLS on :8888, RTSP on :8554)
