@@ -1,11 +1,13 @@
 nebula-server/
 nebula-worker/
 
-storage/.nx/proxy
+storage/.nx/avatars
 storage/.nx/creating
+storage/.nx/proxy
 storage/import.dir/backup
 
 *.mxf
+*.mp4
 *.log
 
 __pycache__

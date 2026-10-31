@@ -24,7 +24,7 @@ channel1 = PlayoutChannelSettings(
     playout_dir="media.dir",
     playout_container="mxf",
     config={
-        "caspar_host": "casparcg",
+        "caspar_host": "balthasar",
         "caspar_port": 5250,
         "caspar_osc_port": 6251,
         "caspar_channel": 1,

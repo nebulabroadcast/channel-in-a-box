@@ -104,9 +104,21 @@ services:
     volumes:
       - "./storage:/mnt/nebula_01"
 
+  balthasar:
+    image: nebulabroadcast/balthasar:latest
+    ports:
+      - 5250:5250
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./balthasar.toml:/etc/balthasar/balthasar.toml
+      - ./storage:/storage
+    depends_on:
+      - mediamtx
+    restart: unless-stopped
+    networks:
+      - nebula-box
 
-  # Preview stream: CasparCG publishes over RTSP, mediamtx serves it
-  # as HLS on http://localhost:8888/live and RTSP on rtsp://localhost:8554/live
   mediamtx:
     image: bluenviron/mediamtx:latest
     restart: unless-stopped
@@ -117,22 +129,6 @@ services:
       - "./mediamtx.yml:/mediamtx.yml:ro"
     networks:
       - nebula-box
-
-  casparcg:
-    image: nebulabroadcast/casparcg:2.5.0
-    ports:
-      - 5250:5250
-    devices:
-      - /dev/dri:/dev/dri
-    volumes:
-      - ./casparcg.config:/opt/casparcg/casparcg.config
-      - ./storage:/storage
-    depends_on:
-      - mediamtx
-    restart: unless-stopped
-    networks:
-      - nebula-box
-
 
 #
 # Docker stack setup
