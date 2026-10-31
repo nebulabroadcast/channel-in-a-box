@@ -1,0 +1,68 @@
+[log]
+level = "info"            # trace, debug, info, warning, error, critical, off
+
+[server]
+realtime = true           # SCHED_FIFO for channel tick and mixer threads; needs CAP_SYS_NICE or an
+                          # rtprio limit (deploy/balthasar.service). Without it: one warning, normal priority
+lock_memory = false       # mlockall: no page faults on the channel threads, everything stays resident
+realtime_cpus = []        # pin tick and mixer threads to these CPUs, e.g. [2, 3]; [] = anywhere
+
+[paths]
+media = "/storage/media.dir"
+templates = "/storage/template.dir"
+
+[amcp]
+bind = "0.0.0.0"          # AMCP has no authentication: use a trusted network
+port = 5250
+
+[http]
+port = 9250               # 0 = off
+
+[osc]                     # state for automation (CasparCG 2.x addresses, docs/OSC.md)
+default_port = 6250       # AMCP clients receive OSC on their own address at this port
+send_to_amcp_clients = true
+
+[[osc.clients]]           # always sent to, e.g. Nebula's play service
+address = "172.44.0.10"
+port = 6251
+
+[mixer]
+threads = 0               # CPU mixer worker threads; 0 = automatic
+lead = 1                  # frames between a tick and its mixed frame reaching the outputs;
+                          # a mix that takes longer repeats the previous frame. 0 = mix on the tick
+
+[producers]
+lookahead = 0.25          # seconds of decoded frames per clip (network sources: twice that).
+                          # Memory: frames x 8.3 MB at 1080p (0.25 s at 50p = 13 frames, 104 MB per clip)
+
+[consumers]
+queue = 8                 # frames waiting for each output's encoder (8 x 8.3 MB at 1080p);
+                          # a slower encoder drops frames beyond it
+
+[timeouts]                # seconds
+open = 5                  # opening a file, for playing or recording
+stream_open = 10          # opening a network URL (udp://, srt://, rtmp://, …)
+stream_read = 5           # a playing network source that sends nothing for this long: live
+                          # sources reconnect (1, 2, 4 … 30 s apart), on-demand URLs end
+close = 5                 # an output flushing its last frames
+shutdown = 5              # SIGINT/SIGTERM to exit; past it, exit code 2
+
+[[channels]]
+format = "1080p5000"      # CasparCG format names; interlaced (1080i5000, PAL, …) runs at field rate
+audio_channels = 2
+clock = "system"
+
+
+[[channels.consumers]]
+type = "stream"
+path = "rtsp://mediamtx:8554/live"
+args = [
+   "-f", "rtsp",
+   "-rtsp_transport", "tcp",
+   "-c:v", "libx264",
+   "-preset", "ultrafast",
+   "-tune", "zerolatency",
+   "-c:a", "aac",
+   "-b:a", "128k",
+]
+

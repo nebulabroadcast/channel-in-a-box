@@ -1,0 +1,48 @@
+{
+  "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+  "id": "nxtv-cg-template",
+  "name": "NXTV CG Template",
+  "version": "0.0.0",
+  "description": "NXTV lower-third / info graphic",
+  "main": "./nxtv.ograf.js",
+  "supportsRealTime": true,
+  "supportsNonRealTime": false,
+  "stepCount": 1,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "showLogo": {
+        "type": "boolean",
+        "title": "Show logo",
+        "default": true
+      },
+      "showClock": {
+        "type": "boolean",
+        "title": "Show clock",
+        "default": false
+      },
+      "showInfo": {
+        "type": "boolean",
+        "title": "Show info",
+        "default": false
+      },
+      "info": {
+        "type": "array",
+        "title": "Info lines",
+        "items": { "type": "string" },
+        "default": ["Line 1", "Line 2", "Line 3"]
+      },
+      "showWeather": {
+        "type": "boolean",
+        "title": "Show weather",
+        "default": false
+      },
+      "weatherLocation": {
+        "type": "string",
+        "title": "Weather location",
+        "description": "City name, e.g. \"Prague\"",
+        "default": "Prague"
+      }
+    }
+  }
+}
